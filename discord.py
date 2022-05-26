@@ -18,7 +18,8 @@ from module import DiscordScraper
 """
 os._exit: Used to exit the script.
 """
-from os import _exit as exit
+from os import _exit as exit, path
+
 
 """
 module.DiscordScraper.loads: Used to access the json.loads function documented in the DiscordScraper class file.
@@ -79,6 +80,25 @@ def startGuild(scraper, guild, channel, day=None):
     :param channel: The ID for the channel that we're wanting to scrape from.
     """
 
+    try:
+        # Generate the guild name.
+        if scraper.guildname == None:
+            scraper.grabGuildName(guild)
+
+        # Generate the channel name.
+        if scraper.channelname == None:
+            scraper.grabChannelName(channel)
+
+    except:
+        pass
+
+    cachefile = scraper.cacheFile(day.year, day.month, day.day)  
+    # if the cachefile already exists, if so then skip it. This allow calls in the same day with performance
+    if path.isfile(cachefile):
+        scraper.debug("has cache, ignoring")
+        day += timedelta(days=-1)
+        return day
+
     # Get the snowflakes for the current day.
     snowflakes = DiscordScraper.getDayBounds(day.day, day.month, day.year)
 
@@ -89,14 +109,6 @@ def startGuild(scraper, guild, channel, day=None):
     scraper.headers.update({'Referer': 'https://discord.com/channels/{0}/{1}'.format(guild, channel)})
 
     try:
-        # Generate the guild name.
-        if scraper.guildname == None:
-            scraper.grabGuildName(guild)
-
-        # Generate the channel name.
-        if scraper.channelname == None:
-            scraper.grabChannelName(channel)
-
         # Generate the scrape folders. TODO: Re-enable this before pushing to the public.
         scraper.createFolders()
 
@@ -151,10 +163,12 @@ def startGuild(scraper, guild, channel, day=None):
 
         # Cache the JSON data if there's anything to cache (don't fill the cache directory with useless API response junk).
         if posts > 0:
-            dumped = scraper.downloadJSON(data, day.year, day.month, day.day)
-            # if dumped and storage was setted then  save into database
-            if (dumped and scraper.storage != None and data['messages'] != None):
-                scraper.storage.importMessagesFromDiscord(data['messages'], guild)
+            todump = True
+            # if storage was setted then  save into database
+            if (scraper.storage != None and data['messages'] != None):
+                todump = scraper.storage.importMessagesFromDiscord(data['messages'], guild)
+            if (todump):
+                scraper.downloadJSON(data, day.year, day.month, day.day)
 
 
         # Check the mimetypes of the embedded and attached files.

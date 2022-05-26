@@ -1,6 +1,7 @@
 from mongoengine import connect, disconnect
-from . import MessageModel
+from . import DiscordMessageModels
 import threading
+from datetime import datetime
 
 
 class Storage(object):
@@ -29,7 +30,7 @@ class Storage(object):
             # if havent content then go to next message
             if (content):
                 author = message[0]["author"]
-                messageModel = MessageModel()
+                messageModel = DiscordMessageModels()
                 # ignore if havent author
                 if (author) :
                     messageModel.authorName = author["username"]
@@ -40,16 +41,20 @@ class Storage(object):
                 messageModel.guildId = guildId
                 messageModel.type = message[0]["type"]
                 messageModel.mId = message[0]["id"]
+                # TODO: Convert UTC to local timezone                
+                messageModel.mDate = datetime.strptime(message[0]["timestamp"].replace("+00:00", ""),'%Y-%m-%dT%H:%M:%S.%f')
                 # try catch to not block python
                 try:
                     # Save each message on mongodb
                     messageModel.save()
+                    return True
                 except:
                     print("Error to save discord message on mongo")
                     print(message)
+        return False
 
     def test(self):
-        messageModel = MessageModel()
+        messageModel = DiscordMessageModels()
         messageModel.title = "Eduardo Marinho"
         messageModel.author = "flow"
         messageModel.contributors = "contr"

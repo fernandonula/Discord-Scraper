@@ -1,6 +1,8 @@
-from mongoengine import Document, StringField, URLField, DecimalField
+from mongoengine import Document, StringField, DateTimeField, DecimalField
+from datetime import datetime
 
-class MessageModel(Document):
+
+class DiscordMessageModels(Document):
     authorName = StringField(max_length=120)
     authorAvatarId = StringField(max_length=35)
     authorId = StringField(max_length=20)
@@ -9,3 +11,5 @@ class MessageModel(Document):
     guildId = StringField(required=True, max_length=35)
     type = DecimalField()
     mId = StringField(max_length=20)
+    mDate = DateTimeField(required=True)
+    createdAt = DateTimeField(required=True, default=datetime.utcnow)

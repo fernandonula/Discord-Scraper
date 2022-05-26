@@ -25,7 +25,7 @@ from .mongo import Storage
 datetime.datetime:  Used to access the datetime class and its functions for easier date processing.
 datetime.timedelta: Used to make the process of subtracting time much easier with less chances of an error on my behalf.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 
 """
 mimetypes.MimeTypes: Used to access the MimeTypes class and its functions for quickly determining if a file extension is an image, video, or something else.
@@ -365,6 +365,19 @@ class DiscordScraper(object):
         # Set the location class variable.
         self.location = folderpath
 
+    def cacheFile(self, year, month, day): 
+        # Create a cache directory.
+        cachedir = path.join(getcwd(), 'cached', self.guildname, self.channelname)
+
+        # Check if it already exists, if not then create it.
+        if not path.exists(cachedir):
+            makedirs(cachedir)
+
+        # Generate the direct file name for the cachefile.
+        cachefile = path.join(cachedir, '{0}_{1}_{2}.cache.json'.format(year, month, day))
+        
+        return cachefile
+
     def downloadJSON(self, data, year, month, day):
         """
         Cache the JSON data from all the scraped channels.
@@ -375,16 +388,7 @@ class DiscordScraper(object):
         
         # Determine if we have configured the script to cache JSON data to begin with.
         if self.gatherJSONData:
-
-            # Create a cache directory.
-            cachedir = path.join(getcwd(), 'cached', self.guildname, self.channelname)
-
-            # Check if it already exists, if not then create it.
-            if not path.exists(cachedir):
-                makedirs(cachedir)
-
-            # Generate the direct file name for the cachefile.
-            cachefile = path.join(cachedir, '{0}_{1}_{2}.cache.json'.format(year, month, day))
+            cachefile = self.cacheFile(year, month, day)  
 
             # Determine if the cachefile already exists, if so then skip it (TODO this might cause issues for incomplete runs, so this needs to be figured out in due time).
             if path.isfile(cachefile):

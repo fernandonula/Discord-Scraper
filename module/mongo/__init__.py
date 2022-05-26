@@ -29,5 +29,5 @@ __email__ = None
 __status__ = 'Production'
 
 # Time to create a simple alias for the library when importing it.
-from .MessageModel import MessageModel
+from .DiscordMessageModels import DiscordMessageModels
 from .Storage import Storage
