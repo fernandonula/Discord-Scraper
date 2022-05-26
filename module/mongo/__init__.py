@@ -1,5 +1,5 @@
 # Entering my username as the author of the library.
-__author__ = 'Dracovian'
+__author__ = 'nula'
 
 # You can contact me via Github, we can set up other forms of communication if needed.
 __contact__ = 'https://github.com/Dracovian'
@@ -8,10 +8,10 @@ __contact__ = 'https://github.com/Dracovian'
 __copyright__ = None
 
 # February 10, 2021 (ISO 8601 date formatting)
-__date__ = '2021-02-10'
+__date__ = '2022-05-24'
 
 # Crediting those who have contributed to the Discord Scraper repository on Github which showcased this library for the first time.
-__credits__ = ['https://github.com/mataha', 'https://github.com/mukatee', 'https://github.com/MRosenst', 'https://github.com/codekaust']
+__credits__ = ['https://github.com/Dracovian']
 
 # The license for this library is the same as the Discord Scraper repository.
 __license__ = 'WTFPL'
@@ -29,4 +29,5 @@ __email__ = None
 __status__ = 'Production'
 
 # Time to create a simple alias for the library when importing it.
-from .DiscordScraper import DiscordScraper
+from .MessageModel import MessageModel
+from .Storage import Storage

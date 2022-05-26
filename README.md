@@ -87,6 +87,17 @@
 <details>
   <summary>Changelog</summary>
 
+2022-05-23 - Added some arguments and developed a mongodb integration (dynamic features):
+* Added command line arguments allowing print logs with --debug and set oldest date to get message date. See below example:
+  * python discord.py --fromD 2022-05-19 --debug 1
+* Mongo DB integration.
+  * First: you need to install mongoengine:
+    * python3 -m pip install pymongo
+    * python3 -m pip install mongoengines
+    * python3 -m pip install dnspython
+  * Second: create file mongodb.con and put the mongo connection following the format:
+    * mongodb+srv://[user]:[pass]@cluster0.xuz.mongodb.net/[database]
+
 2021-02-10 - Starting the path to finalizing the experimental branch:
 * Fixed a major oversight when it comes to scraping more than 25 posts for each day (more than 25 requires an offset query to be added to the undocumented API call).
 * Allowing for direct media grabbing alongside JSON caching to save on time (it was faster to grab both JSON and media simultaneously day-by-day as opposed to grabbing JSON data in bulk and then checking each JSON file afterwards).

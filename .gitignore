@@ -2,6 +2,9 @@
 *.token.*
 *.token
 
+# Avoid leakage of mongo db connection
+mongodb.con
+
 # We don't want to push our IDE configuration folder(s) to our repo.
 .idea/
 .vscode/

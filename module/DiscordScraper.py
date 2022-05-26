@@ -11,6 +11,17 @@ sys.version_info: Used to determine which version of Python is being used to run
 from sys import stderr, version_info
 
 """
+tools to help parse arguments passed on command line
+"""
+import argparse
+from time import strptime
+
+"""
+
+"""
+from .mongo import Storage
+
+"""
 datetime.datetime:  Used to access the datetime class and its functions for easier date processing.
 datetime.timedelta: Used to make the process of subtracting time much easier with less chances of an error on my behalf.
 """
@@ -113,6 +124,20 @@ class DiscordScraper(object):
         :param apiversion: The API version that Discord uses for its backend, this is currently set to "v8" as of November 2020.
         """
 
+        # Parsing arguments command
+        parser=argparse.ArgumentParser()
+        parser.add_argument('--fromD',type=self.mkdate,help="Oldest date to get messages. Date format '2022-05-01'")
+        parser.add_argument('--debug',type=bool,help="If debug then show messages on console.log")
+        args=parser.parse_args()
+
+        # setting if show message or not case debug is setted or not
+        self.isDebug=args.debug
+
+        # Setting oldest date to get messages
+        self.fromD=args.fromD
+        if  self.fromD == None :
+            self.fromD = datetime(2015, 1, 1);
+
         # Determine if the configfile argument is not set.
         if configfile is None:
 
@@ -162,6 +187,18 @@ class DiscordScraper(object):
             'User-Agent': config.useragent,    # The user-agent string that tells the server which browser, operating system, and rendering engine we're using.
             'Authorization': tokenfiledata     # The authorization token that authorizes this script to carry out actions with your account, this script only requires this to access the data on the specified guilds and channels for scraping purposes. NEVER UNDER ANY CIRCUMSTANCE SHARE THIS VALUE TO ANYONE YOU DO NOT TRUST!
         }
+
+        if config.mongofile:
+            # Generate a direct file path to the mongo file.
+            mongofile = path.join(getcwd(), config.mongofile)
+            # Throw an error if the authorization token file doesn't exist.
+            if not path.exists(mongofile):
+                error('mongo configuration file can not be found at the following location: {0}'.format(mongofile))
+            # Open the file in text-mode for reading.
+            with open(mongofile, 'r') as mongofilestream:
+                # Read the first line
+                mongoconnection = mongofilestream.readline().rstrip()
+                self.storage = Storage(mongoconnection)
 
         # Create some class variables to store the configuration file data.
         self.apiversion = apiversion      # The backend Discord API version which denotes which API functions are available for use and which are deprecated.
@@ -351,13 +388,15 @@ class DiscordScraper(object):
 
             # Determine if the cachefile already exists, if so then skip it (TODO this might cause issues for incomplete runs, so this needs to be figured out in due time).
             if path.isfile(cachefile):
-                return None
+                return False
             
             # Open the cachefile for appending textual data.
             with open(cachefile, 'w') as cachefilestream:
-                
                 # Write the JSON data directly to the file.
                 dump(data, cachefilestream, indent=4)
+            
+            # if dumped return true
+            return True
     
     def startDownloading(self, url, location):
         """
@@ -458,6 +497,13 @@ class DiscordScraper(object):
         except:
             pass
     
+    def debug(self, str):
+        """
+        If debug enabled show print console text
+        """
+        if (self.isDebug) :
+            print(str)
+
     @staticmethod
     def randomString(length):
         """
@@ -643,3 +689,15 @@ class DiscordScraper(object):
 
         # Return the response.
         return request.sendRequest(url)
+
+    @staticmethod
+    def mkdate(datestr):
+        """
+        Convert date string to time
+        :param datestr: Date string.
+        """
+        try:
+            ctime = strptime(datestr, '%Y-%m-%d')
+            return datetime(ctime.tm_year, ctime.tm_mon, ctime.tm_mday)
+        except ValueError:
+            raise argparse.ArgumentTypeError(datestr + ' is not a proper date string')

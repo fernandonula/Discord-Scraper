@@ -25,7 +25,7 @@ module.DiscordScraper.loads: Used to access the json.loads function documented i
 """
 from module.DiscordScraper import loads
 
-def getLastMessageGuild(scraper, guild, channel):
+def getLastMessageGuild(scraper, guild, channel, nlastmessages=1):
     """
     Use the official Discord API to retrieve the last publicly viewable message in a channel.
     :param scraper: The DiscordScraper class reference that we will be using.
@@ -34,7 +34,7 @@ def getLastMessageGuild(scraper, guild, channel):
     """
 
     # Generate a valid URL to the documented API function for retrieving channel messages (we don't care about the 100 message limit this time).
-    lastmessage = 'https://discord.com/api/{0}/channels/{1}/messages?limit=1'.format(scraper.apiversion, channel)
+    lastmessage = 'https://discord.com/api/{0}/channels/{1}/messages?limit={2}'.format(scraper.apiversion, channel, nlastmessages)
 
     # Update the HTTP request headers to set the referer to the current guild channel URL.
     scraper.headers.update({'Referer': 'https://discord.com/channels/{0}/{1}'.format(guild, channel)})
@@ -109,8 +109,12 @@ def startGuild(scraper, guild, channel, day=None):
             # Set the day to yesterday.
             day += timedelta(days=-1)
 
+            # if returned nothing, return the new day to the loop
+            return day
+
+            # remove recursively because this method run into a loop
             # Recursively call this function with the new day.
-            startGuild(scraper, guild, channel, day)
+            # startGuild(scraper, guild, channel, day)
         
         # Read the response data.
         data = loads(response.read().decode('iso-8859-1'))
@@ -147,7 +151,11 @@ def startGuild(scraper, guild, channel, day=None):
 
         # Cache the JSON data if there's anything to cache (don't fill the cache directory with useless API response junk).
         if posts > 0:
-            scraper.downloadJSON(data, day.year, day.month, day.day)
+            dumped = scraper.downloadJSON(data, day.year, day.month, day.day)
+            # if dumped and storage was setted then  save into database
+            if (dumped and scraper.storage != None and data['messages'] != None):
+                scraper.storage.importMessagesFromDiscord(data['messages'], guild)
+
 
         # Check the mimetypes of the embedded and attached files.
         scraper.checkMimetypes(data)
@@ -174,6 +182,8 @@ def start(scraper, guild, channel, day=None):
         del scraper
         scraper = DiscordScraper()
 
+    scraper.debug("guild: "+guild+" - channel: "+channel)
+
     # Determine if the day is empty, default to the current day if so.
     if day is None:
         day = datetime.today()
@@ -183,7 +193,8 @@ def start(scraper, guild, channel, day=None):
         exit(0)
         
     # The smallest snowflake that Discord recognizes is from January 1, 2015.
-    while day > datetime(2015, 1, 1):
+    while day > scraper.fromD:
+        scraper.debug(day)
         day = startGuild(scraper, guild, channel, day)
 
 if __name__ == '__main__':
