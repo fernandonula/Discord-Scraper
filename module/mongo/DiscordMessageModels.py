@@ -9,6 +9,7 @@ class DiscordMessageModels(Document):
     content = StringField(required=True)
     channelId = StringField(required=True, max_length=20)
     guildId = StringField(required=True, max_length=35)
+    channelname = StringField(max_length=120)
     type = DecimalField()
     mId = StringField(max_length=20)
     mDate = DateTimeField(required=True)

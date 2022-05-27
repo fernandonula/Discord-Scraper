@@ -17,13 +17,13 @@ class Storage(object):
         # disconnect()
 
     # async import messages method 
-    def importMessagesFromDiscord(self, messages, guildId) :
+    def importMessagesFromDiscord(self, messages, guildId, channelname) :
         # import messages using async way
-        thr = threading.Thread(target=self._importMessagesFromDiscord, args=(messages, guildId), kwargs={})
+        thr = threading.Thread(target=self._importMessagesFromDiscord, args=(messages, guildId, channelname), kwargs={})
         thr.start()
 
     # sync import messages method 
-    def _importMessagesFromDiscord(self, messages, guildId) :
+    def _importMessagesFromDiscord(self, messages, guildId, channelname) :
         # all messages loop
         for message in messages:
             content = message[0]["content"]
@@ -40,6 +40,7 @@ class Storage(object):
                 messageModel.channelId = message[0]["channel_id"]
                 messageModel.guildId = guildId
                 messageModel.type = message[0]["type"]
+                messageModel.channelname = channelname
                 messageModel.mId = message[0]["id"]
                 # TODO: Convert UTC to local timezone                
                 messageModel.mDate = datetime.strptime(message[0]["timestamp"].replace("+00:00", ""),'%Y-%m-%dT%H:%M:%S.%f')
