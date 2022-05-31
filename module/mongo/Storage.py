@@ -49,9 +49,9 @@ class Storage(object):
                     # Save each message on mongodb
                     messageModel.save()
                     return True
-                except:
+                except Exception as e:
                     print("Error to save discord message on mongo")
-                    print(message)
+                    print(e)
         return False
 
     def test(self):

@@ -163,14 +163,11 @@ def startGuild(scraper, guild, channel, day=None):
 
         # Cache the JSON data if there's anything to cache (don't fill the cache directory with useless API response junk).
         if posts > 0:
-            todump = True
+            scraper.debug("creating cache...")
+            scraper.downloadJSON(data, day.year, day.month, day.day)
             # if storage was setted then  save into database
             if (scraper.storage != None and data['messages'] != None):
-                todump = scraper.storage.importMessagesFromDiscord(data['messages'], guild, scraper.channelname)
-                scraper.debug("todump: "+todump)
-            if (todump):
-                scraper.debug("creating cache...")
-                scraper.downloadJSON(data, day.year, day.month, day.day)
+                scraper.storage.importMessagesFromDiscord(data['messages'], guild, scraper.channelname)
 
 
         # Check the mimetypes of the embedded and attached files.
