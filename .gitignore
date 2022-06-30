@@ -19,6 +19,8 @@ cached/
 # We don't want to push any precompiled Python files to be pushed either.
 module/__pycache__/
 module/*.pyc
+module/mongo/__pycache__/
+module/mongo/*.pyc
 
 # Do not modify config.unmodified.json, instead copy it and name it "config.json" so that we don't accidentally push your config to your Github.
 config.json

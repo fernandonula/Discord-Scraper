@@ -293,6 +293,10 @@ class DiscordScraper(object):
             # Set the guild name class variable with the guild name.
             self.guildname = u'{0}_{1}'.format(id, guildname)
 
+            # if storage was setted then save server data into database
+            if (self.storage != None):
+                self.storage.importServerData(data)
+
     
     def grabChannelName(self, id, dm=None):
         """
@@ -349,6 +353,10 @@ class DiscordScraper(object):
 
             # Set the channel name class variable with the channel name.
             self.channelname = u'{0}_{1}'.format(id, channelname)
+
+            # if storage was setted then save channel data into database
+            if (self.storage != None):
+                self.storage.importChannelData(data)
     
     def createFolders(self):
         """

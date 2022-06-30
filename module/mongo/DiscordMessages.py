@@ -1,8 +1,8 @@
-from mongoengine import Document, StringField, DateTimeField, DecimalField
+from mongoengine import DynamicDocument, StringField, DateTimeField, DecimalField, ListField
 from datetime import datetime
 
 
-class DiscordMessageModels(Document):
+class DiscordMessages(DynamicDocument):
     authorName = StringField(max_length=120)
     authorAvatarId = StringField(max_length=35)
     authorId = StringField(max_length=20)
@@ -14,3 +14,7 @@ class DiscordMessageModels(Document):
     mId = StringField(max_length=20)
     mDate = DateTimeField(required=True)
     createdAt = DateTimeField(required=True, default=datetime.utcnow)
+    attachments = ListField()
+    embeds = ListField()
+    mentions = ListField()
+    components = ListField()
