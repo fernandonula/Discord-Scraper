@@ -128,10 +128,19 @@ class DiscordScraper(object):
         parser=argparse.ArgumentParser()
         parser.add_argument('--fromD',type=self.mkdate,help="Oldest date to get messages. Date format '2022-05-01'")
         parser.add_argument('--debug',type=bool,help="If debug then show messages on console.log")
+        parser.add_argument('--configFile', type=str,help="Custom config file")
+        parser.add_argument('--tokenFile', type=str,help="Custom token file")
+        parser.add_argument('--mongoFile', type=str,help="Custom mongo file")
+        parser.add_argument('--guildId', type=str,help="Get infos from the refered guild")
+        parser.add_argument('--channelsId', type=str,help="List of channels separated by ,")
+        parser.add_argument('--justLastMessages', type=int,help="Return a INT list of last messages and stop script")
         args=parser.parse_args()
 
         # setting if show message or not case debug is setted or not
         self.isDebug=args.debug
+
+        # set if will be returned just Last Messages
+        self.justLastMessages=args.justLastMessages
 
         # Setting oldest date to get messages
         self.fromD=args.fromD
@@ -141,8 +150,14 @@ class DiscordScraper(object):
         # Determine if the configfile argument is not set.
         if configfile is None:
 
-            # Set it to the default value of "config.json"
-            configfile = 'config.json'
+            if (args.configFile is None) :
+
+                # Set it to the default value of "config.json"
+                configfile = 'config.json'
+
+            # config file passed from arg
+            else :
+                configfile = args.configFile
         
         # Determine if the apiversion argument is not set.
         if apiversion is None:
@@ -170,7 +185,13 @@ class DiscordScraper(object):
         config = type('DiscordConfig', (object, ), configdata)()
 
         # Generate a direct file path to the authorization token file.
-        tokenfile = path.join(getcwd(), config.tokenfile)
+        if (args.tokenFile is None) :
+            tokenfile = path.join(getcwd(), config.tokenfile)
+
+        # config file passed from arg
+        else :
+            tokenfile = args.tokenFile
+        
 
         # Throw an error if the authorization token file doesn't exist.
         if not path.exists(tokenfile):
@@ -191,6 +212,12 @@ class DiscordScraper(object):
         if config.mongofile:
             # Generate a direct file path to the mongo file.
             mongofile = path.join(getcwd(), config.mongofile)
+
+         # mongo configuration from args
+        if args.mongoFile:
+            mongofile = args.mongoFile
+
+        if mongofile:
             # Throw an error if the authorization token file doesn't exist.
             if not path.exists(mongofile):
                 error('mongo configuration file can not be found at the following location: {0}'.format(mongofile))
@@ -217,6 +244,16 @@ class DiscordScraper(object):
         # Use Python ternary operators to set the class variables for direct messages and guilds that we should scrape.
         self.directs = config.directs if len(config.directs) > 0 else {}
         self.guilds  = config.guilds  if len(config.guilds ) > 0 else {}
+
+        # Using guilds from arguments and ignoring from file
+        if (args.guildId and args.channelsId):
+            channels = args.channelsId.split(",")
+            guilds = {}
+            guilds[args.guildId] = []
+            for channel in channels:
+                guilds[args.guildId].append(channel)
+            if (len(guilds[args.guildId]) > 0) :
+                self.guilds = guilds
 
         # Create a blank guild name, channel name, and folder location class variable.
         self.guildname = None

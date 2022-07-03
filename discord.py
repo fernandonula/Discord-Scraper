@@ -9,6 +9,7 @@ datetime.timedelta: Used to subtract an entire day from the current one.
 datetime.datetime:  Used to retrieve the current day.
 """
 from datetime import timedelta, datetime
+from email import message
 
 """
 module.DiscordScraper: Used to access the Discord Scraper class functions.
@@ -47,9 +48,16 @@ def getLastMessageGuild(scraper, guild, channel, nlastmessages=1):
         # If we returned nothing then return nothing.
         if response is None:
             return None
+
+        responseread = response.read()
+
+        # If need to show last messages
+        if (scraper.justLastMessages is not None) :
+            print("lastmessage")
+            print(responseread)
         
         # Read the response data and convert it into a dictionary object.
-        data = loads(response.read())
+        data = loads(responseread)
 
         # Retrieve the snowflake of the post and convert it into a timestamp.
         timestamp = DiscordScraper.snowflakeToTimestamp(int(data[0]['id']))
@@ -214,9 +222,11 @@ if __name__ == '__main__':
     """
     This is the entrypoint for our script since __name__ is going to be set to __main__ by default.
     """
-
     # Create a variable that references the Discord Scraper class.
     discordscraper = DiscordScraper()
+
+    # Number of last messages to be returned, default is 1
+    lastMessages = discordscraper.justLastMessages if (discordscraper.justLastMessages != None) else 1
 
     # Iterate through the guilds to scrape.
     for guild, channels in discordscraper.guilds.items():
@@ -225,13 +235,19 @@ if __name__ == '__main__':
         for channel in channels:
 
             # Retrieve the datetime object for the most recent post in the channel.
-            lastdate = getLastMessageGuild(discordscraper, guild, channel)
+            lastdate = getLastMessageGuild(discordscraper, guild, channel, lastMessages)
 
-            # Start the scraper for the current channel.
-            start(discordscraper, guild, channel, lastdate)
+            # If the script not just last messages
+            if (discordscraper.justLastMessages is None) :
+                # Start the scraper for the current channel.
+                start(discordscraper, guild, channel, lastdate)
     
-    # Iterate through the direct messages to scrape.
-    for alias, channel in discordscraper.directs.items():
 
-        # Start the scraper for the current direct message.
-        startDM(discordscraper, alias, channel)
+    # If the script not just last messages
+    if (discordscraper.justLastMessages is None) :
+
+        # Iterate through the direct messages to scrape.
+        for alias, channel in discordscraper.directs.items():
+
+            # Start the scraper for the current direct message.
+            startDM(discordscraper, alias, channel)
